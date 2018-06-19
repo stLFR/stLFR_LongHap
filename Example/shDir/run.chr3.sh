@@ -1,0 +1,21 @@
+perl /home-02/ysun/LongHap/Bin/LongHap.pl input.bam input.vcf chr3:1-10000000 300000 1 1 outDir_tmp/chr3_1_10000000.log 2>outDir_tmp/chr3_1_10000000.error
+perl /home-02/ysun/LongHap/Bin/LongHap.pl input.bam input.vcf chr3:9500001-20000000 300000 1 1 outDir_tmp/chr3_9500001_20000000.log 2>outDir_tmp/chr3_9500001_20000000.error
+perl /home-02/ysun/LongHap/Bin/LongHap.pl input.bam input.vcf chr3:19500001-30000000 300000 1 1 outDir_tmp/chr3_19500001_30000000.log 2>outDir_tmp/chr3_19500001_30000000.error
+perl /home-02/ysun/LongHap/Bin/LongHap.pl input.bam input.vcf chr3:29500001-40000000 300000 1 1 outDir_tmp/chr3_29500001_40000000.log 2>outDir_tmp/chr3_29500001_40000000.error
+perl /home-02/ysun/LongHap/Bin/LongHap.pl input.bam input.vcf chr3:39500001-50000000 300000 1 1 outDir_tmp/chr3_39500001_50000000.log 2>outDir_tmp/chr3_39500001_50000000.error
+perl /home-02/ysun/LongHap/Bin/LongHap.pl input.bam input.vcf chr3:49500001-60000000 300000 1 1 outDir_tmp/chr3_49500001_60000000.log 2>outDir_tmp/chr3_49500001_60000000.error
+perl /home-02/ysun/LongHap/Bin/LongHap.pl input.bam input.vcf chr3:59500001-70000000 300000 1 1 outDir_tmp/chr3_59500001_70000000.log 2>outDir_tmp/chr3_59500001_70000000.error
+perl /home-02/ysun/LongHap/Bin/LongHap.pl input.bam input.vcf chr3:69500001-80000000 300000 1 1 outDir_tmp/chr3_69500001_80000000.log 2>outDir_tmp/chr3_69500001_80000000.error
+perl /home-02/ysun/LongHap/Bin/LongHap.pl input.bam input.vcf chr3:79500001-90000000 300000 1 1 outDir_tmp/chr3_79500001_90000000.log 2>outDir_tmp/chr3_79500001_90000000.error
+perl /home-02/ysun/LongHap/Bin/LongHap.pl input.bam input.vcf chr3:89500001-100000000 300000 1 1 outDir_tmp/chr3_89500001_100000000.log 2>outDir_tmp/chr3_89500001_100000000.error
+perl /home-02/ysun/LongHap/Bin/LongHap.pl input.bam input.vcf chr3:99500001-110000000 300000 1 1 outDir_tmp/chr3_99500001_110000000.log 2>outDir_tmp/chr3_99500001_110000000.error
+perl /home-02/ysun/LongHap/Bin/LongHap.pl input.bam input.vcf chr3:109500001-120000000 300000 1 1 outDir_tmp/chr3_109500001_120000000.log 2>outDir_tmp/chr3_109500001_120000000.error
+perl /home-02/ysun/LongHap/Bin/LongHap.pl input.bam input.vcf chr3:119500001-130000000 300000 1 1 outDir_tmp/chr3_119500001_130000000.log 2>outDir_tmp/chr3_119500001_130000000.error
+perl /home-02/ysun/LongHap/Bin/LongHap.pl input.bam input.vcf chr3:129500001-140000000 300000 1 1 outDir_tmp/chr3_129500001_140000000.log 2>outDir_tmp/chr3_129500001_140000000.error
+perl /home-02/ysun/LongHap/Bin/LongHap.pl input.bam input.vcf chr3:139500001-150000000 300000 1 1 outDir_tmp/chr3_139500001_150000000.log 2>outDir_tmp/chr3_139500001_150000000.error
+perl /home-02/ysun/LongHap/Bin/LongHap.pl input.bam input.vcf chr3:149500001-160000000 300000 1 1 outDir_tmp/chr3_149500001_160000000.log 2>outDir_tmp/chr3_149500001_160000000.error
+perl /home-02/ysun/LongHap/Bin/LongHap.pl input.bam input.vcf chr3:159500001-170000000 300000 1 1 outDir_tmp/chr3_159500001_170000000.log 2>outDir_tmp/chr3_159500001_170000000.error
+perl /home-02/ysun/LongHap/Bin/LongHap.pl input.bam input.vcf chr3:169500001-180000000 300000 1 1 outDir_tmp/chr3_169500001_180000000.log 2>outDir_tmp/chr3_169500001_180000000.error
+perl /home-02/ysun/LongHap/Bin/LongHap.pl input.bam input.vcf chr3:179500001-190000000 300000 1 1 outDir_tmp/chr3_179500001_190000000.log 2>outDir_tmp/chr3_179500001_190000000.error
+perl /home-02/ysun/LongHap/Bin/LongHap.pl input.bam input.vcf chr3:189500001-198022430 300000 1 1 outDir_tmp/chr3_189500001_198022430.log 2>outDir_tmp/chr3_189500001_198022430.error
+perl /home-02/ysun/LongHap/Bin/merge.pl outDir_tmp chr3 10000000 outDir_final/chr3.log

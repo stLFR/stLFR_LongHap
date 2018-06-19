@@ -1,0 +1,26 @@
+This script is writen for individual genome phasing based on hg19 reference genome for now. More optional reference genomes are to be added.
+
+Usage:
+perl Main.pl <indexed sorted bam> <vcf> <window size> <max LFR> <min SupportBarcodes> <min Link> <shellDir> <outDir_tmp> <outDir_final>
+
+Detailed Description:
+<indexed sorted bam> is an alignment file in BAM format which should be sorted and indexed in advance
+<vcf> shoud store variant calling result in VCF format
+<window size> is set for each phasing window, 10MB is suggested
+<max LFR> is decided by the maximum length of DNA fragment
+<min SupportBarcodes> is minimum count of supporting barcode for each variant
+<min Link> is minimum count of linked info
+<shellDir> is an directory storing shell scripts which need to be executed, absolute path is suggested
+<outDir_tmp> is a temporary directory storing split phasing result, absolute path is suggested
+<outDir_final> is a directory storing the final phasing result, absolute path is suggested.
+
+Example:
+perl Main.pl input.bam input.vcf 10000000 300000 1 1 shellDir outDir_tmp outDir_final
+After running this command, you will find 23 shell scripts in shellDir, with the names of "run.chr1.sh" or "run.chrX.sh", which could be executed parallelly using qsub-sge.
+
+
+Author:
+Sun Yuhui
+
+Email:
+sunyuhui@genomics.cn
