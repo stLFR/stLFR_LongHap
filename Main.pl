@@ -1,7 +1,10 @@
 #! /usr/bin/perl
 use strict;
 use FindBin qw($Bin);
+use Cwd qw(abs_path getcwd);
+
 my $root_path = $Bin;
+my $abs = abs_path (getcwd());
 my $len_file = "$root_path/Database/hg19/hg19.fa.fai";
 
 die "Usage:perl $0 <indexed sorted bam> <vcf> <window size> <max LFR> <min SupportBarcodes> <min Link> <shellDir> <outDir_tmp> <outDir_final>
@@ -18,19 +21,31 @@ Email: sunyuhui\@genomics.cn\n" unless @ARGV==9;
 
 
 my $bam = $ARGV[0];
+unless ($bam =~ /^\//){
+	$bam = "$abs"."/"."$bam";
+}
+#$bam = abs_path ($bam);
 my $vcf = $ARGV[1];
+unless ($vcf =~ /^\//){
+	$vcf = "$abs"."/"."$vcf";
+}
+#$vcf = abs_path ($vcf);
 my $win_size = $ARGV[2];
 my $max_LFR_len = $ARGV[3];
 my $min_barcode_num = $ARGV[4];
 my $min_link = $ARGV[5];
 
+
 my $shellDir = $ARGV[6];
+$shellDir = abs_path ($shellDir);
 mkdir $shellDir unless -d $shellDir;
 
 my $outDir = $ARGV[7];
+$outDir = abs_path ($outDir);
 mkdir $outDir unless -d $outDir;
 
 my $mergeDir = $ARGV[8];
+$mergeDir = abs_path ($mergeDir);
 mkdir $mergeDir unless -d $mergeDir;
 
 
@@ -58,6 +73,10 @@ while(<LEN>){
 		print SH "perl $root_path/Bin/LongHap.pl $bam $vcf $chr:$beg-$end $max_LFR_len $min_barcode_num $min_link $outDir/$chr\_$beg\_$end.log 2>$outDir/$chr\_$beg\_$end.error\n";
 	}
 	print SH "perl $root_path/Bin/merge.pl $outDir $chr $win_size $mergeDir/$chr.log\n";
+	print SH "cat $outDir/$chr\_*.hete.barcodes |sort |uniq >$mergeDir/$chr.hete.barcodes\n";
+	print SH "cat $outDir/$chr\_*.homo.barcodes |sort |uniq >$mergeDir/$chr.homo.barcodes\n";
+	print SH "cat $outDir/$chr\_*.unknown.barcodes |sort |uniq >$mergeDir/$chr.unknown.barcodes\n";
+	print SH "perl $root_path/Bin/log2vcf.pl $mergeDir/$chr.log $mergeDir/$chr.hete.barcodes $mergeDir/$chr.homo.barcodes $vcf >$mergeDir/$chr.vcf\n";
 	close SH;
 }
 close LEN;
