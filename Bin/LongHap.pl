@@ -35,6 +35,7 @@ my ($chr, $beg, $end) = ($1, $2, $3);
 my (%marker, %marker_hete2, %marker_hete1, %marker_homo);
 my %het;
 my %var;
+my %nt;
 my $num_ori;
 open VAR, $var or die $!;
 while(<VAR>){
@@ -53,8 +54,10 @@ while(<VAR>){
 	if ($info=~/1\/2/){ #het-het
 		$alt_base =~ /(\w+),(\w+)/;
 		my ($alle_1, $alle_2) = ($1, $2);
-		my $new_alle_1 = alle ($alle_1, $ref_base);
-		my $new_alle_2 = alle ($alle_2, $ref_base);
+		my ($nt_of_1, $new_alle_1) = alle ($alle_1, $ref_base);
+		my ($nt_of_2, $new_alle_2) = alle ($alle_2, $ref_base);
+		$nt{"$ref:$pos:$new_alle_1"} = $nt_of_1 if $new_alle_1 =~ /[I|D]/; 
+		$nt{"$ref:$pos:$new_alle_2"} = $nt_of_2 if $new_alle_2 =~ /[I|D]/; #Attention: if the length of two insertions is equal, it will be trouble! Therefore, these sites will be skipped when phasing.
 		$marker{$pos} = "$new_alle_1:$new_alle_2";
 		$marker_hete2{$pos} = "$new_alle_1:$new_alle_2";
 		$var{$pos}{$new_alle_1}=1;
@@ -62,7 +65,8 @@ while(<VAR>){
                 $het{$pos}=1;
                 $num_ori++;
 	}elsif ($info=~/0\/1/){ #het-ref
-		my $new_alle = alle ($alt_base, $ref_base);
+		my ($nt_of_alle, $new_alle) = alle ($alt_base, $ref_base);
+		$nt{"$ref:$pos:$new_alle"} = $nt_of_alle if $new_alle =~ /[I|D]/;
 		$ref_base =~ /^([A|T|G|C])/;
 		$ref_base = $1;
 		$marker{$pos} = "$ref_base:$new_alle";
@@ -71,7 +75,7 @@ while(<VAR>){
                 $het{$pos}=1;
                 $num_ori++;
 	}elsif ($info=~/1\/1/ or $info=~/1|1/){ #homo
-		my $new_alle = alle ($alt_base, $ref_base);
+		my ($nt_of_alle, $new_alle) = alle ($alt_base, $ref_base);
 		$ref_base =~ /^([A|T|G|C])/;
                 $ref_base = $1;
 		$marker{$pos} = "$ref_base:$new_alle";
@@ -188,7 +192,8 @@ while (<IN>){
 				if ($marker{$start}){
 					$marker{$start} =~ /(\w+):(\w+)/;
                                 	my ($alle_1, $alle_2) = ($1, $2);
-					if ($query_base eq $alle_1 or $query_base eq $alle_2){
+#					if ($query_base eq $alle_1 or $query_base eq $alle_2){
+					if (($alle_1 ne $alle_2) and ($query_base eq $alle_1 or $query_base eq $alle_2)){ ## two insertions should not have the same length, like I2 equal I2
 						if ($info{$barcode}{$start}){
                                         		unless ($info{$barcode}{$start} eq $query_base){
                                                         	$info{$barcode}{$start} = "conflict";
@@ -260,7 +265,7 @@ foreach my $barcode (sort keys %info){
 	}
 }
 
-
+my %support_ref;
 open HET, ">$outDir/$chr\_$beg\_$end.hete.barcodes" or die $!;
 open HOM, ">$outDir/$chr\_$beg\_$end.homo.barcodes" or die $!;
 open UN, ">$outDir/$chr\_$beg\_$end.unknown.barcodes" or die $!;
@@ -270,18 +275,38 @@ foreach my $pos (keys %marker_hete2){
 	if ($barcodes{"$chr:$pos:$alt_1"} and $barcodes{"$chr:$pos:$alt_2"}){
 		print HET "NULL\tNULL\t$chr\t$pos\t$alt_1\t",$barcodes{"$chr:$pos:$alt_1"},"\n";
 		print HET "NULL\tNULL\t$chr\t$pos\t$alt_2\t",$barcodes{"$chr:$pos:$alt_2"},"\n";
+		$support_ref{$pos} = 1; # 1: both of the two alleles have supporting barcodes
 	}else{
-                print UN "NULL\tNULL\t$chr\t$pos\t$alt_1\t$alt_2\n";
-        }
+        print UN "NULL\tNULL\t$chr\t$pos\t$alt_1\t$alt_2\n";
+#		$support_ref{$pos} = 0; # 0: one of the two alleles doesn't have supporting barcodes
+		$support_ref{$pos} = 1; # 1: both of the two alleles have supporting barcodes
+    }
 }
 foreach my $pos (keys %marker_hete1){
         $marker_hete1{$pos} =~ /(\w+):(\w+)/;
         my ($ref_alle, $alt_alle) = ($1, $2);
-        if ($barcodes{"$chr:$pos:$alt_alle"}){
-                print HET "NULL\tNULL\t$chr\t$pos\t$ref_alle\t",$barcodes{"$chr:$pos:$ref_alle"},"\n";
-                print HET "NULL\tNULL\t$chr\t$pos\t$alt_alle\t",$barcodes{"$chr:$pos:$alt_alle"},"\n";
+        if ($barcodes{"$chr:$pos:$alt_alle"} and $barcodes{"$chr:$pos:$ref_alle"}){
+            print HET "NULL\tNULL\t$chr\t$pos\t$ref_alle\t",$barcodes{"$chr:$pos:$ref_alle"},"\n";
+            print HET "NULL\tNULL\t$chr\t$pos\t$alt_alle\t",$barcodes{"$chr:$pos:$alt_alle"},"\n";
+			$support_ref{$pos} = 1; # 1: both of the two alleles have supporting barcodes 
         }else{
-                print UN "NULL\tNULL\t$chr\t$pos\t$ref_alle\t$alt_alle\n";
+		if ((length $alt_alle) >1){ #indel
+			if ($barcodes{"$chr:$pos:$alt_alle"}){
+				print HET "NULL\tNULL\t$chr\t$pos\t$ref_alle\t",$barcodes{"$chr:$pos:$ref_alle"},"\n";
+				print HET "NULL\tNULL\t$chr\t$pos\t$alt_alle\t",$barcodes{"$chr:$pos:$alt_alle"},"\n";
+			}else{
+				print UN "NULL\tNULL\t$chr\t$pos\t$ref_alle\t$alt_alle\n";
+			}
+			$support_ref{$pos} = 1;
+		}else{						#snp
+	        	if ($barcodes{"$chr:$pos:$alt_alle"}){
+				print HET "NULL\tNULL\t$chr\t$pos\t$ref_alle\t",$barcodes{"$chr:$pos:$ref_alle"},"\n";	
+				print HET "NULL\tNULL\t$chr\t$pos\t$alt_alle\t",$barcodes{"$chr:$pos:$alt_alle"},"\n";
+			}else{
+				print UN "NULL\tNULL\t$chr\t$pos\t$ref_alle\t$alt_alle\n";
+			}
+			$support_ref{$pos} = 0; # 0: one of the two alleles doesn't have supporting barcodes
+		}
         }
 }
 foreach my $pos (keys %marker_homo){
@@ -305,6 +330,7 @@ foreach my $barcode (sort keys %info){
 		my $base = $info{$barcode}{$pos};
 		next unless ($base =~ /[A|T|G|C]/ or $base=~ /[I|D]\d+/);
 		next unless $support{$pos} >= $minSUPPORT;
+		next unless $support_ref{$pos} >0;
 		foreach my $fpos (keys %tmp){
 			my $fbase = $tmp{$fpos};
 			if ((abs ($pos - $fpos)) < $maxLFR){
@@ -326,13 +352,26 @@ foreach my $pos (sort {$a<=>$b} keys %link){
 }
 close LINK;
 
-my ($seed_1, $seed_2, %add, %danger);
+my ($seed_1, $seed_2, $print_seed_1, $print_seed_2, %add, %danger);
 foreach my $pos (sort {$a<=>$b} keys %final){
         next unless $support{$pos} >= $minSUPPORT;
+	next unless $support_ref{$pos} >0;
         $final{$pos} =~ /(\w+):(\w+)/;
         my ($geno_1, $geno_2) = ($1, $2);
         $seed_1 = "$chr\_$pos\_$geno_1";
         $seed_2 = "$chr\_$pos\_$geno_2";
+	if ($geno_1 =~/[I|D]/){
+		my $nt_geno_1 = $nt{"$chr:$pos:$geno_1"};
+		$print_seed_1 = "$chr\_$pos\_$nt_geno_1";
+	}else{
+		$print_seed_1 = $seed_1;
+	}
+	if ($geno_2 =~/[I|D]/){
+		my $nt_geno_2 = $nt{"$chr:$pos:$geno_2"};
+		$print_seed_2 = "$chr\_$pos\_$nt_geno_2";
+	}else{
+		$print_seed_2 = $seed_2;
+	}
         $add{$pos} =1;
         last;
 }
@@ -401,6 +440,19 @@ while($seed_1){
                         }
                         $seed_1 .= ";$chr\_$pos\_$seed_1_geno";
                         $seed_2 .= ";$chr\_$pos\_$seed_2_geno";
+			if ($seed_1_geno =~/[I|D]/){
+				my $nt_seed_1_geno = $nt{"$chr:$pos:$seed_1_geno"};
+				$print_seed_1 .= ";$chr\_$pos\_$nt_seed_1_geno"; 
+			}else{
+				$print_seed_1 .= ";$chr\_$pos\_$seed_1_geno";
+			}
+			if ($seed_2_geno =~/[I|D]/){
+                                my $nt_seed_2_geno = $nt{"$chr:$pos:$seed_2_geno"};
+                                $print_seed_2 .= ";$chr\_$pos\_$nt_seed_2_geno";
+                        }else{
+                                $print_seed_2 .= ";$chr\_$pos\_$seed_2_geno";
+                        }
+			
                         $add{$pos}=1;
                         $max = $pos if $pos >$max;
                         $num_phased_marker++;
@@ -411,7 +463,7 @@ while($seed_1){
                 }
         }
         if ($extend ==0){
-        	print OUT "break\n",$seed_1, "\n", $seed_2, "\n";
+        	print OUT "break\n",$print_seed_1, "\n", $print_seed_2, "\n";
                 my @loci_1 = split /;/, $seed_1;
                 my @loci_2 = split /;/, $seed_2;
                 my ($seed_1_reads, $seed_2_reads);
@@ -452,16 +504,31 @@ while($seed_1){
 
                 undef $seed_1; #TODO
                 undef $seed_2; #TODO
+		undef $print_seed_1;
+		undef $print_seed_2;
                 undef %merge1;
                 undef %merge2;
                 foreach my $pos (sort {$a<=>$b} keys %final){
                         next if $add{$pos};
                         next if $danger{$pos};
                         next unless $support{$pos}>=$minSUPPORT;
+			next unless $support_ref{$pos} >0;
                         $final{$pos}=~ /(\w+):(\w+)/;
                         my ($geno_1,$geno_2) = ($1, $2);
 			$seed_1 = "$chr\_$pos\_$geno_1";
                         $seed_2 = "$chr\_$pos\_$geno_2";
+			if ($geno_1 =~/[I|D]/){
+                                my $nt_geno_1 = $nt{"$chr:$pos:$geno_1"};
+                                $print_seed_1 = "$chr\_$pos\_$nt_geno_1";
+                        }else{
+                                $print_seed_1 = $seed_1;
+                        }
+                        if ($geno_2 =~/[I|D]/){
+                                my $nt_geno_2 = $nt{"$chr:$pos:$geno_2"};
+                                $print_seed_2 = "$chr\_$pos\_$nt_geno_2";
+                        }else{
+                                $print_seed_2 = $seed_2;
+                        }
                         $add{$pos}=1;
                         $max = $pos;
                         $merge1{$pos} = $geno_1;
@@ -478,18 +545,24 @@ close OUT;
 
 sub alle {
 	my ($alt, $ref) = @_;
+	my $nt_of_alt;
 	my $alt_len = length $alt;
 	my $ref_len = length $ref;
-	if ($alt_len < $ref_len){
+	if ($alt_len < $ref_len){     #del
 		my $indel_len = $ref_len - $alt_len;
+		$nt_of_alt = substr ($ref, $alt_len, $indel_len);
+		$nt_of_alt = "D$nt_of_alt";
                 $alt = "D$indel_len";
-	}elsif ($alt_len > $ref_len){
+	}elsif ($alt_len > $ref_len){ #ins
 		my $indel_len = $alt_len - $ref_len;
+		$nt_of_alt = substr ($alt, $ref_len, $indel_len);
+		$nt_of_alt = "I$nt_of_alt";
 		$alt = "I$indel_len";
-	}else{
+	}else{			      #snp
         	$alt =~ /^([A|T|G|C])/; #GA G,AA
+		$nt_of_alt = $alt;
 		$alt = $1;
 	}
-	return $alt;
+	return ($nt_of_alt, $alt);
 }
 
