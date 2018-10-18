@@ -1,5 +1,6 @@
 LongHap is writen for individual genome phasing based on the alignment and variantion results generated from stLFR and NGS technology. Latest version was v1.3 upload in 10/17/2018.
 
+
 Usage:
   perl Main.pl <indexed sorted bam> <vcf> <window size> <max LFR> <min SupportBarcodes> <min Link> <shellDir> <outDir_tmp> <outDir_final>
 
