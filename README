@@ -20,7 +20,7 @@ Detailed Description:
 
 Example:
   perl Main.pl input.bam input.vcf 10000000 300000 1 1 shellDir outDir_tmp outDir_final  
-  After running this command, you will find 23 shell scripts in shellDir, with the names of "run.chr1.sh" or "run.chrX.sh", 
+  After running this command, you will find 23 shell scripts in shellDir, with the names of "run.chr1.sh" or "run.chrX.sh",
 which could be executed parallelly. In average, each chromosome costs 2~3 hours by consuming 4GB memory.The final phasing
 result can be found in outDir_final dir in chr*.vcf files, while the medium file storing barcode supporting info can be found
 in the outDir_tmp dir.
